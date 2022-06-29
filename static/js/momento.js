@@ -6,7 +6,7 @@ function init(){
     const language = document.getElementById("language");
 
     btn.addEventListener("click", (e)=>{
-        if(!e.target.value.trim()) {
+        if(!rawCode.value.trim()) {
             return alert("No puede publicar un código en blanco")
         }
         const data = new FormData()
@@ -17,7 +17,10 @@ function init(){
             body: data
         })
         .then(req => req.json())
-        .then(res => alert(res.msg))
+        .then(res => {
+            if(res.status) return alert(res.msg);
+            window.location.href = `${window.location.href}./momento/${res['code-code']}`
+        })
     })
 }
 const str2blob = txt => new Blob([txt]);

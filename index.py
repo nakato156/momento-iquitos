@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request
 from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_OAEP
@@ -6,7 +6,11 @@ import secrets
 from pathlib import Path
 from os import getenv
 
-PATH_CODES = Path(__name__).parent / getenv("path")
+if getenv("myHouse"):
+    from dotenv import load_dotenv
+    load_dotenv()
+
+PATH_CODES = Path(__name__).parent / getenv("mypath")
 
 app = Flask(__name__)
 
@@ -20,7 +24,6 @@ def upload():
     data = request.files.get("code").stream.read().strip()
     if not data: return {"status": False, "msg": "No puede subir un archivo vacio"}
     lang = request.form.get("lang").strip()
-    if not lang: return {"status": False, "msg": "No se selecciono algun lenguaje"}
 
     public = open("receiver.pem")
     recipient_key = RSA.import_key(public.read())
@@ -35,13 +38,13 @@ def upload():
     url = secrets.token_urlsafe(20)
     with open(PATH_CODES / f"{url}.bin", "wb") as file:
         [ file.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
-    return redirect(f"/momento/{url}")
+    return {"msg": "subido con exito", "code-code":url}
 
 @app.get("/momento/<string:code>")
 def momento(code):
     file_in = open(PATH_CODES / f"{code}.bin", "rb")
 
-    private = getenv("private")
+    private = open(getenv("namePrivate"), "rb")
     private_key = RSA.import_key(private.read())
     private.close()
 
@@ -57,4 +60,4 @@ def momento(code):
     return render_template("momento.html", code = data, language = lang)
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = getenv("myHouse"))
