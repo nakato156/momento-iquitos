@@ -4,7 +4,21 @@ from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_OAEP
 import secrets
 from pathlib import Path
-from os import getenv
+from os import getenv, listdir
+
+i = 0
+for file in listdir():
+    if file.endswith(".pem"): i += 1
+if i != 2:
+    key = RSA.generate(2048)
+    private_key = key.export_key()
+    with open(getenv("namePrivate"), "wb") as file_out:
+        file_out.write(private_key)
+
+    public_key = key.publickey().export_key()
+    with open(getenv("namePublic"), "wb") as file_out:
+        file_out.write(public_key)
+del i
 
 if getenv("myHouse"):
     from dotenv import load_dotenv
@@ -25,7 +39,7 @@ def upload():
     if not data: return {"status": False, "msg": "No puede subir un archivo vacio"}
     lang = request.form.get("lang").strip()
 
-    public = open("receiver.pem")
+    public = open(getenv("namePublic"))
     recipient_key = RSA.import_key(public.read())
     session_key = get_random_bytes(16)
     public.close()
@@ -44,8 +58,9 @@ def upload():
 def momento(code):
     file_in = open(PATH_CODES / f"{code}.bin", "rb")
 
-    private = open(getenv("namePrivate"), "rb")
-    private_key = RSA.import_key(private.read())
+    private = getenv("namePrivate").encode()
+    print(private)
+    private_key = RSA.import_key(private)
     private.close()
 
     enc_session_key, nonce, tag, ciphertext = [ file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
