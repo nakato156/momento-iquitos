@@ -56,7 +56,7 @@ def upload():
 
 @app.get("/momento/<string:code>")
 def momento(code):
-    if not PATH_CODES.exist():
+    if not Path(PATH_CODES).exists():
         mkdir(PATH_CODES)
     file_in = open(PATH_CODES / f"{code}.bin", "rb")
 
