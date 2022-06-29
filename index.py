@@ -4,7 +4,7 @@ from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_OAEP
 import secrets
 from pathlib import Path
-from os import getenv, listdir
+from os import getenv, listdir, mkdir
 
 i = 0
 for file in listdir():
@@ -56,6 +56,8 @@ def upload():
 
 @app.get("/momento/<string:code>")
 def momento(code):
+    if not PATH_CODES.exist():
+        mkdir(PATH_CODES)
     file_in = open(PATH_CODES / f"{code}.bin", "rb")
 
     private = getenv("namePrivate").encode()
