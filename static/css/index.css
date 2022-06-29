@@ -1,0 +1,33 @@
+body {
+    background: #272727;
+}
+.newMomento {
+    max-width: 90%;
+    height: 100%;
+    margin: auto;
+}
+.div-code {
+    margin-top: 30px;
+}
+.div-code > textarea { 
+    min-height: 70vh;
+    background-color: transparent;
+    color: #fff;
+    width: 100%;
+}
+.div-code > textarea :focus-within {
+    background-color: transparent;
+}
+.newMomento > button { width: 30%; }
+div {
+    max-width: 90%;
+    margin: auto;
+}
+.options {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+.options > button {
+    width: 50%;
+}

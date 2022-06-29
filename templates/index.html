@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block Header %}
+<title>Momento iquitos</title>
+<link rel="stylesheet" href="{{url_for('static', filename='css/index.css')}}">
+{% endblock %}
+
+{% block Body %}
+<section class="newMomento">
+    <div class="mb-3 div-code">
+        <label class="form-label">Example textarea</label>
+        <textarea class="code" id="code" rows="3" style="resize: none;" spellcheck="false"></textarea>
+    </div>
+    <div class="options">
+        <select id="language">
+            <option value="" disabled selected>Seleccione una lenguaje</option>
+            <option value="javascript">Javascript</option>
+            <option value="c">C</option>
+            <option value="cpp">C++</option>
+            <option value="php">Php</option>
+            <option value="markup">markup</option>
+            <option value="css">CSS</option>
+            <option value="arduino">arduino</option>
+            <option value="aspnet">aspnet</option>
+            <option value="bash">bash</option>
+            <option value="batch">batch</option>
+            <option value="csharp">C#</option>
+            <option value="csv">CSV</option>
+            <option value="java">java</option>
+            <option value="kotlin">kotlin</option>
+            <option value="latex">latex</option>
+            <option value="markdown">markdown</option>
+            <option value="templating">templating</option>
+            <option value="mongodb">mongodb</option>
+            <option value="perl">perl</option>
+            <option value="powershell">powershell</option>
+            <option value="r">R</option>
+            <option value="jsx"jsx></option>
+            <option value="solidity">solidity</option>
+            <option value="sql">SQL</option>
+            <option value="xml-doc">XML</option>
+            <option value="yaml">YAML</option>
+        </select>
+        <button id="subir" type="button" class="btn btn-outline-light">Subir</button>
+    </div>
+</section>
+{% endblock %}
+
+{% block Scripts %}
+<script src="{{url_for('static', filename='js/momento.js')}}"></script>
+{% endblock %}

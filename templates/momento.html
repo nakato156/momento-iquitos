@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block Header %}
+<title>Momento iquitos </title>
+<link rel="stylesheet" href="{{url_for('static', filename='css/prism.css')}}">
+<script src="{{url_for('static', filename='css/prism.css')}}"></script>
+{% endblock %}
+
+{% block Body %}
+<div class="mb-3">
+    <label class="form-label">C&oacute;digo</label>
+    <pre>
+        <code class="language-{{language}}">{{code}}</code>
+    </pre>
+</div>
+{% endblock %}
+
+{% block Scripts %}
+<script src="{{url_for('static', filename='js/prism.js')}}"></script>
+{% endblock %}
