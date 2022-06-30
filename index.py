@@ -1,32 +1,23 @@
 from flask import Flask, render_template, request
+from flask_mysqldb import MySQL
 from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import AES, PKCS1_OAEP
 import secrets
-from pathlib import Path
-from os import getenv, listdir, mkdir
-
-i = 0
-for file in listdir():
-    if file.endswith(".pem"): i += 1
-if i != 2:
-    key = RSA.generate(2048)
-    private_key = key.export_key()
-    with open(getenv("namePrivate"), "wb") as file_out:
-        file_out.write(private_key)
-
-    public_key = key.publickey().export_key()
-    with open(getenv("namePublic"), "wb") as file_out:
-        file_out.write(public_key)
-del i
+import io
+from os import getenv
 
 if getenv("myHouse"):
     from dotenv import load_dotenv
     load_dotenv()
 
-PATH_CODES = Path(__name__).parent / getenv("mypath")
-
 app = Flask(__name__)
+app.config["MYSQL_HOST"] = getenv("BD_HOST")
+app.config["MYSQL_USER"] = getenv("BD_USER")
+app.config["MYSQL_PASSWORD"] = getenv("BD_PASS")
+app.config["MYSQL_DB"] = getenv("BD_NAME")
+
+mysql = MySQL(app)
 
 @app.get("/")
 @app.get("/momento")
@@ -48,22 +39,27 @@ def upload():
     enc_session_key = cipher_rsa.encrypt(session_key)
     cipher_aes = AES.new(session_key, AES.MODE_EAX)
 
-    ciphertext, tag = cipher_aes.encrypt_and_digest(lang.encode()+b';;'+data)
+    ciphertext, tag = cipher_aes.encrypt_and_digest(data)
     url = secrets.token_urlsafe(20)
-    with open(PATH_CODES / f"{url}.bin", "wb") as file:
-        [ file.write(x) for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) ]
+    content = b''.join( x for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) )
+    cur = mysql.connection.cursor()
+    cur.execute("INSERT INTO momentos (content, url, lang) VALUES (%b, %s, %s)", (content, url, lang))
+    mysql.connection.commit()
+    cur.close()
     return {"msg": "subido con exito", "code-code":url}
 
 @app.get("/momento/<string:code>")
 def momento(code):
-    if not Path(PATH_CODES).exists():
-        mkdir(PATH_CODES)
-    file_in = open(PATH_CODES / f"{code}.bin", "rb")
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT content, lang FROM momentos WHERE url = %s", (code, ))
+    content, lang = cur.fetchall()[0]
+    file_in = io.BytesIO(content)
 
-    private = getenv("namePrivate").encode()
-    print(private)
-    private_key = RSA.import_key(private)
-    private.close()
+    cur.execute(f"SELECT {getenv('namePrivate')} FROM {getenv('tablePrivate')}")
+    res:bytes = cur.fetchall()[0][0]
+    private = io.StringIO(res.decode())
+    private_key = RSA.import_key(private.read())
+    cur.close()
 
     enc_session_key, nonce, tag, ciphertext = [ file_in.read(x) for x in (private_key.size_in_bytes(), 16, 16, -1) ]
 
@@ -72,9 +68,7 @@ def momento(code):
 
     cipher_aes = AES.new(session_key, AES.MODE_EAX, nonce)
     data = cipher_aes.decrypt_and_verify(ciphertext, tag)
-    data = data.decode("utf-8")
-    lang, data = data.split(";;")
-    return render_template("momento.html", code = data, language = lang)
+    return render_template("momento.html", code = data.decode("utf-8"), language = lang)
 
 if __name__ == '__main__':
     app.run(debug = getenv("myHouse"))

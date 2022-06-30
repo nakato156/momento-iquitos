@@ -19,7 +19,7 @@ function init(){
         .then(req => req.json())
         .then(res => {
             if(res.status) return alert(res.msg);
-            window.location.href = `${window.location.href}./momento/${res['code-code']}`
+            window.location.href = `${window.location.href}/../momento/${res['code-code']}`
         })
     })
 }
