@@ -44,7 +44,7 @@ def upload():
     url = secrets.token_urlsafe(20)
     content = b''.join( x for x in (enc_session_key, cipher_aes.nonce, tag, ciphertext) )
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO momentos (uuid, content, url, lang) VALUES (%b, %s, %s)", (f"{uuid4()}", content, url, lang))
+    cur.execute("INSERT INTO momentos (uuid, content, url, lang) VALUES (%s, %b, %s, %s)", (f"{uuid4()}", content, url, lang))
     mysql.connection.commit()
     cur.close()
     return {"msg": "subido con exito", "code-code":url}
